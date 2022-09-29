@@ -21,11 +21,10 @@ async function searchInfos(canapeID)
     }
 
 // Local storage
-console.log(localStorage.length);
 let commande = localStorage.getItem("basket");
 let itemList = JSON.parse(commande);
 let NumberOfArticles = itemList.length
-console.log(itemList.length);
+
 // Construction
 async function DisplayArticle (canape)
     {
@@ -36,7 +35,6 @@ async function DisplayArticle (canape)
         let imgUrl = infos[2];
         let description = infos[3];
         let altTxt = infos[4];
-        console.log(name,price,imgUrl,description,altTxt)
         // construction de la Dom
         let DomIdItem = document.querySelector('#cart__items');
         // <article>
@@ -92,9 +90,10 @@ async function DisplayArticle (canape)
                     DomDelete.setAttribute('class','cart__item__content__settings__delete');
                         // <p class="deleteItem">Supprimer</p>
                         let DomDeleteItem = document.createElement('p');
-                        DomDeleteItem.setAttribute('class',"deleteItem");
+                        DomDeleteItem.setAttribute('class','deleteItem');
                         DomDeleteItem.textContent = "Supprimer";
 
+        // Génération de la Dom
         DomDelete.append(DomDeleteItem);
         DomQuantity.append(DomQte,DomInputQuantity);
         DomSettings.append(DomQuantity,DomDelete);
@@ -103,13 +102,48 @@ async function DisplayArticle (canape)
         DomDivImg.append(DomImg);
         DomAddArticle.append(DomDivImg,DomDivContent);
         DomIdItem.appendChild(DomAddArticle);
-
+        TotalQuantity();
     }
 //
 
-for (let i=0 ; i<NumberOfArticles ; i++)
+function DomGeneration()
     {
-        let canape = itemList[i];
-        DisplayArticle(canape);
+        for (let i=0 ; i<NumberOfArticles ; i++)
+        {
+            let canape = itemList[i];
+            DisplayArticle(canape);
+        }
     }
 
+function TotalQuantity()
+    {
+        let Total = 0;
+        for (let i=0; i<NumberOfArticles ; i++)
+        {
+            let canape = itemList[i];
+            Total += canape.Quantity;
+        }
+        document.querySelector('#totalQuantity').textContent = Total;
+    }
+
+function Delete()
+    {
+        const boutonDelete = document.querySelectorAll('.deleteItem');
+        console.log(boutonDelete)
+        // boutonDelete.addEventListener('click',function()
+        //     {
+        //         boutonClick = boutonDelete.closest('.cart__item');
+        //         let dataID = boutonClick.dataset.id;
+        //         console.log(dataID);
+        //     }
+        // )
+    }
+
+async function main()
+    {
+        await DomGeneration()
+        Delete()
+        
+    }
+
+main();
