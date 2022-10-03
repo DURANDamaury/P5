@@ -24,7 +24,7 @@ async function searchInfos(canapeID)
 let commande = localStorage.getItem("basket");
 let itemList = JSON.parse(commande);
 let NumberOfArticles = itemList.length
-
+/* ********************************************* */
 // Construction
 async function DisplayArticle (canape)
     {
@@ -104,18 +104,8 @@ async function DisplayArticle (canape)
         DomIdItem.appendChild(DomAddArticle);
         TotalQuantity();
     }
-//
 
-function DomGeneration()
-    {
-        for (let i=0 ; i<NumberOfArticles ; i++)
-        {
-            let canape = itemList[i];
-            DisplayArticle(canape);
-        }
-    }
-
-function TotalQuantity()
+    function TotalQuantity()
     {
         let Total = 0;
         for (let i=0; i<NumberOfArticles ; i++)
@@ -125,24 +115,39 @@ function TotalQuantity()
         }
         document.querySelector('#totalQuantity').textContent = Total;
     }
+//
 
+async function DomGeneration()
+    {
+        for (let i=0 ; i<NumberOfArticles ; i++)
+            {
+                let canape = itemList[i];
+                await DisplayArticle(canape);
+            }
+        return;
+    }
+/* ************************************************************ */
 function Delete()
     {
-        const boutonDelete = document.querySelectorAll('.deleteItem');
-        console.log(boutonDelete)
-        // boutonDelete.addEventListener('click',function()
-        //     {
-        //         boutonClick = boutonDelete.closest('.cart__item');
-        //         let dataID = boutonClick.dataset.id;
-        //         console.log(dataID);
-        //     }
-        // )
-    }
 
+        const boutonDelete = document.querySelectorAll('.deleteItem');
+        boutonDelete.forEach(item => 
+            {
+            item.addEventListener('click', event => 
+                {
+                const BoutonId = event.target;
+                const FindCart__item = BoutonId.closest('.cart__item');
+                const DataSet_Find = FindCart__item.dataset.id;
+                console.log('Dataset:'+DataSet_Find)
+                })
+            })
+
+    }
+/* **************************************************************** */
 async function main()
     {
         await DomGeneration()
-        Delete()
+        Delete();
         
     }
 
