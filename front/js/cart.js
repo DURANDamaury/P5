@@ -24,6 +24,11 @@ async function searchInfos(canapeID)
 let commande = localStorage.getItem("basket");
 let itemList = JSON.parse(commande);
 let NumberOfArticles = itemList.length
+
+function setBasket(basket) 
+    {
+    localStorage.setItem("basket", JSON.stringify(basket));
+    }
 /* ********************************************* */
 // Construction
 async function DisplayArticle (canape)
@@ -131,14 +136,19 @@ function Delete()
     {
 
         const boutonDelete = document.querySelectorAll('.deleteItem');
-        boutonDelete.forEach(item => 
+        boutonDelete.forEach((item,BoutonNumber) => 
             {
             item.addEventListener('click', event => 
                 {
                 const BoutonId = event.target;
                 const FindCart__item = BoutonId.closest('.cart__item');
                 const DataSet_Find = FindCart__item.dataset.id;
-                console.log('Dataset:'+DataSet_Find)
+                //modification du panier
+                itemList.splice(BoutonNumber,1);
+                setBasket(itemList);
+                //modification DOM
+                FindCart__item.remove();
+
                 })
             })
 
