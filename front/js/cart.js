@@ -79,7 +79,7 @@ async function DisplayArticle (canape)
                     DomQuantity.setAttribute('class','cart__item__content__settings__quantity');
                         // <p>Qté :
                         let DomQte = document.createElement('p');
-                        DomQte.textContent = "Qté : "+canape.Quantity;
+                        DomQte.textContent = "Qté : ";
                         // <input type="number" class="itemQuantity" name="itemQuantity" min="1" max="100" value="42">
                         let DomInputQuantity = document.createElement('input');
                         DomInputQuantity.setAttribute('type','number');
@@ -87,7 +87,7 @@ async function DisplayArticle (canape)
                         DomInputQuantity.setAttribute('name','itemQuantity');
                         DomInputQuantity.setAttribute('min','1');
                         DomInputQuantity.setAttribute('max','100');
-                        DomInputQuantity.setAttribute('value','42');
+                        DomInputQuantity.setAttribute('value',canape.Quantity);
                         
                         
                     // <div class="cart__item__content__settings__delete">
@@ -142,22 +142,43 @@ function Delete()
                 {
                 const BoutonId = event.target;
                 const FindCart__item = BoutonId.closest('.cart__item');
-                const DataSet_Find = FindCart__item.dataset.id;
                 //modification du panier
                 itemList.splice(BoutonNumber,1);
                 setBasket(itemList);
                 //modification DOM
                 FindCart__item.remove();
-
                 })
             })
 
+    }
+/* **************************************************************** */
+function ModifyQuantity()
+    {
+        const QuantityLevel = document.querySelectorAll('.itemQuantity');
+        QuantityLevel.forEach((item,CaseNumber) =>
+            {
+            item.addEventListener('change', event =>
+                {
+                //lecture de la valeur
+                const QuantityCase = event.target;
+                const QuantityValue = QuantityCase.value;
+                console.log('nouvellevaleur='+QuantityValue)
+                //modification du panier
+                DomItemQuantity = itemList[CaseNumber];
+                DomItemQuantity.Quantity = QuantityValue;
+                setBasket(itemList);
+
+                //mise à jour du total
+                //TotalQuantity();
+                })
+            })
     }
 /* **************************************************************** */
 async function main()
     {
         await DomGeneration()
         Delete();
+        ModifyQuantity();
         
     }
 
