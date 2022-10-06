@@ -60,7 +60,7 @@ async function DisplayArticle (canape)
             DomDivContent.setAttribute('class','cart__item__content');
                 // <div class="cart__item__content__description">
                 let DomDescription = document.createElement('div');
-                DomDescription.setAttribute('classe','cart__item__content__description');
+                DomDescription.setAttribute('class','cart__item__content__description');
                     // <h2> Nom du produit
                     let DomNom = document.createElement('h2');
                     DomNom.textContent = name;
@@ -73,7 +73,7 @@ async function DisplayArticle (canape)
 
                 // <div class="cart__item__content__settings">
                 let DomSettings = document.createElement('div');
-                DomSettings.setAttribute('classe','cart__item__content__settings')
+                DomSettings.setAttribute('class','cart__item__content__settings')
                     // <div class="cart__item__content__settings__quantity">
                     let DomQuantity = document.createElement('div');
                     DomQuantity.setAttribute('class','cart__item__content__settings__quantity');
@@ -107,19 +107,23 @@ async function DisplayArticle (canape)
         DomDivImg.append(DomImg);
         DomAddArticle.append(DomDivImg,DomDivContent);
         DomIdItem.appendChild(DomAddArticle);
-        TotalQuantity();
     }
 
-    function TotalQuantity()
+function TotalQuantity()
+{
+    let commande = localStorage.getItem("basket");
+    let itemList = JSON.parse(commande);
+    let NumberOfArticles = itemList.length
+
+    let Total = 0;
+    for (let i=0; i<NumberOfArticles ; i++)
     {
-        let Total = 0;
-        for (let i=0; i<NumberOfArticles ; i++)
-        {
-            let canape = itemList[i];
-            Total += canape.Quantity;
-        }
-        document.querySelector('#totalQuantity').textContent = Total;
+        let canape = itemList[i];
+        NewValue = JSON.parse(canape.Quantity)
+        Total += NewValue;
     }
+    document.querySelector('#totalQuantity').textContent = Total;
+}
 //
 
 async function DomGeneration()
@@ -134,7 +138,6 @@ async function DomGeneration()
 /* ************************************************************ */
 function Delete()
     {
-
         const boutonDelete = document.querySelectorAll('.deleteItem');
         boutonDelete.forEach((item,BoutonNumber) => 
             {
@@ -142,15 +145,28 @@ function Delete()
                 {
                 const BoutonId = event.target;
                 const FindCart__item = BoutonId.closest('.cart__item');
+                //on supprime l'élément 'supprimer" de l'eventlist
+                this.removeEventListener('click',Delete);
+                //on recherche l'elément quantité pour le supprimer de l'eventlist
+                const EventQuantityButtonFind1 = BoutonId.closest('.cart__item__content__settings');
+                const EventQuantityButtonFind2 = EventQuantityButtonFind1.childNodes
+                const EventQuantityButtonFind3 = EventQuantityButtonFind2[0];
+                const EventQuantityButtonFind4 = EventQuantityButtonFind3.childNodes
+                const EventQuantityButton = EventQuantityButtonFind4[1];
+                EventQuantityButton.removeEventListener('change', ModifyQuantity);
                 //modification du panier
+                let commande = localStorage.getItem("basket");
+                let itemList = JSON.parse(commande);
+                let NumberOfArticles = itemList.length
                 itemList.splice(BoutonNumber,1);
                 setBasket(itemList);
                 //modification DOM
                 FindCart__item.remove();
+                NumberOfArticles--;
+                TotalQuantity();
                 })
             })
-
-    }
+        }
 /* **************************************************************** */
 function ModifyQuantity()
     {
@@ -162,24 +178,80 @@ function ModifyQuantity()
                 //lecture de la valeur
                 const QuantityCase = event.target;
                 const QuantityValue = QuantityCase.value;
-                console.log('nouvellevaleur='+QuantityValue)
                 //modification du panier
+                let commande = localStorage.getItem("basket");
+                let itemList = JSON.parse(commande);
                 DomItemQuantity = itemList[CaseNumber];
                 DomItemQuantity.Quantity = QuantityValue;
                 setBasket(itemList);
 
                 //mise à jour du total
-                //TotalQuantity();
+                TotalQuantity();
                 })
             })
+    }
+/* **************************************************************** */
+function OrderSend()
+    {
+        const OrderButton = document.getElementById('order');
+        OrderButton.addEventListener('click',OrderTraitment);
+    }
+/* **************************************************************** */
+function OrderTraitment()
+    {
+        const verify=FormVerify();
+        if (verify)
+            {setContact();}
+            else 
+            {alert('erreur dans la saisie');return 0};
+    }
+/* *************************************************************** */
+// vérifie si les données fournies dans le formulaire sont valides //
+// retourne true si la vérification a abouti. sinon false          //
+/* *************************************************************** */
+function FormVerify ()
+    {
+        const Prenom = document.getElementById('firstName').value;
+        const Nom = document.getElementById('lastName').value;
+        const Adresse = document.getElementById('address').value;
+        const Ville = document.getElementById('city').value;
+        const Email = document.getElementById('email').value;
+        const Chiffres = /[^a-zA-Z]/;
+        if (Chiffres.test(Prenom)){alert('Seules les lettres sont accéptées.');return false};
+        if (Chiffres.test(Nom)){alert('Seules les lettres sont accéptées.');return false };
+        if (Chiffres.test(Ville)){alert('Seules les lettres sont accéptées.');return false };
+        const MailCaracters = /@+\./g
+        if (MailCaracters.test(Email)==false){alert('Votre email doit contenir @ et un point');return false }
+        return true;
+    }
+/* *************************************************************** */
+// Génère l'objet contact                                          //
+/* *************************************************************** */
+function setContact()
+    {
+        const Prenom = document.getElementById('firstName').value;
+        const Nom = document.getElementById('lastName').value;
+        const Adresse = document.getElementById('address').value;
+        const Ville = document.getElementById('city').value;
+        const Email = document.getElementById('email').value;
+
+        const contact = 
+            {
+            firstName: Prenom,
+            lastName: Nom,
+            address: Adresse,
+            city: Ville,
+            email: Email
+            }
     }
 /* **************************************************************** */
 async function main()
     {
         await DomGeneration()
+        TotalQuantity();
         Delete();
         ModifyQuantity();
-        
+        OrderSend();
     }
 
 main();
