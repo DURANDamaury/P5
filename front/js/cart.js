@@ -145,15 +145,18 @@ function Delete()
                 {
                 const BoutonId = event.target;
                 const FindCart__item = BoutonId.closest('.cart__item');
-                //on supprime l'élément 'supprimer" de l'eventlist
-                this.removeEventListener('click',Delete);
-                //on recherche l'elément quantité pour le supprimer de l'eventlist
-                const EventQuantityButtonFind1 = BoutonId.closest('.cart__item__content__settings');
-                const EventQuantityButtonFind2 = EventQuantityButtonFind1.childNodes
-                const EventQuantityButtonFind3 = EventQuantityButtonFind2[0];
-                const EventQuantityButtonFind4 = EventQuantityButtonFind3.childNodes
-                const EventQuantityButton = EventQuantityButtonFind4[1];
-                EventQuantityButton.removeEventListener('change', ModifyQuantity);
+                    /* ************************************************************************************* */
+                    /* ********          Tentative de résolution du bug par suppréssion des eventlist ****** */
+                    /* ************************************************************************************* */
+                    //on supprime l'élément 'supprimer" de l'eventlist
+                    this.removeEventListener('click',Delete);
+                    //on recherche l'elément quantité pour le supprimer de l'eventlist
+                    const EventQuantityButtonFind1 = BoutonId.closest('.cart__item__content__settings');
+                    const EventQuantityButtonFind2 = EventQuantityButtonFind1.childNodes
+                    const EventQuantityButtonFind3 = EventQuantityButtonFind2[0];
+                    const EventQuantityButtonFind4 = EventQuantityButtonFind3.childNodes
+                    const EventQuantityButton = EventQuantityButtonFind4[1];
+                    EventQuantityButton.removeEventListener('change', ModifyQuantity);
                 //modification du panier
                 let commande = localStorage.getItem("basket");
                 let itemList = JSON.parse(commande);
