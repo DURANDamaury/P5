@@ -199,33 +199,72 @@ function OrderSend()
         const OrderButton = document.getElementById('order');
         OrderButton.addEventListener('click',OrderTraitment);
     }
-/* **************************************************************** */
-function OrderTraitment()
+/* ***************************************************************************************
+   *** génère l'eventListener pour la vérification du formulaire à partir d'un tableau ***
+   *************************************************************************************** */ 
+function Verifyform()
     {
-        const verify=FormVerify();
-        if (verify)
-            {setContact();}
-            else 
-            {alert('erreur dans la saisie');return 0};
+        class InputTab
+            {
+                constructor(ElementTest,Mask,IdMsg,ErrorMsg)
+                {
+                    this.ElementTest = ElementTest;
+                    this.Mask = Mask;
+                    this.IdMsg = IdMsg;
+                    this.ErrorMsg = ErrorMsg;
+                }
+            }
+
+        const RegexNomPrenom = /(^.{1,}[a-zA-ZÀ-ÿ]+$)/ // /[^a-zA-Z]/
+        const RegexAdresse = /\w+(\s\w+){2,}/
+        const RegexMail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+
+        // Données sous la forme suivante:
+            // Id le l'input html
+            // regex
+            // Id html p pour l'affichage de l'erreur
+            // Message d'erreur à afficher
+
+        let Prenom = new InputTab('firstName',RegexNomPrenom,'firstNameErrorMsg','Le prenom doit contenir 2 lettres.')
+        let Nom = new InputTab('lastName',RegexNomPrenom,'lastNameErrorMsg','Le nom doit contenir 2 lettres.')
+        let Adresse = new InputTab('address',RegexAdresse,'addressErrorMsg',"l'adresse sous la forme: N°, rue.")
+        let Ville = new InputTab('city',RegexNomPrenom,'cityErrorMsg','Nom de ville invalide')
+        let Mail = new InputTab('email',RegexMail,'emailErrorMsg','Email invalide')
+        
+        const InputData = [Prenom,Nom,Adresse,Ville,Mail];
+
+        InputData.forEach(element => 
+            {
+                ElementTest = element.ElementTest;
+                Mask = element.Mask;
+                IdMsg = element.IdMsg;
+                ErrorMsg = element.ErrorMsg;
+
+                VerifyInput(ElementTest,Mask,IdMsg,ErrorMsg);
+            });
     }
-/* *************************************************************** */
-// vérifie si les données fournies dans le formulaire sont valides //
-// retourne true si la vérification a abouti. sinon false          //
-/* *************************************************************** */
-function FormVerify ()
+
+
+    /* **************************************************************
+       *** Cette fonction crée l'eventlistener pour le formulaire ***
+       ************************************************************** */
+    function VerifyInput(ElementTest,Mask,IdMsg,ErrorMsg)
     {
-        const Prenom = document.getElementById('firstName').value;
-        const Nom = document.getElementById('lastName').value;
-        const Adresse = document.getElementById('address').value;
-        const Ville = document.getElementById('city').value;
-        const Email = document.getElementById('email').value;
-        const Chiffres = /[^a-zA-Z]/;
-        if (Chiffres.test(Prenom)){alert('Seules les lettres sont accéptées.');return false};
-        if (Chiffres.test(Nom)){alert('Seules les lettres sont accéptées.');return false };
-        if (Chiffres.test(Ville)){alert('Seules les lettres sont accéptées.');return false };
-        const MailCaracters = /@+\./g
-        if (MailCaracters.test(Email)==false){alert('Votre email doit contenir @ et un point');return false }
-        return true;
+        document.getElementById(ElementTest).addEventListener('change', function()
+        {
+            const Input = document.getElementById(ElementTest).value;
+            const Chiffres = Mask;
+            if (Chiffres.test(Input))
+            {
+                const ErrorMessage = document.getElementById(IdMsg);
+                ErrorMessage.textContent = '';
+            }
+            else           
+            {
+                const ErrorMessage = document.getElementById(IdMsg);
+                ErrorMessage.textContent = ErrorMsg;
+            }
+        });
     }
 /* *************************************************************** */
 // Génère l'objet contact                                          //
@@ -254,7 +293,7 @@ async function main()
         TotalQuantity();
         Delete();
         ModifyQuantity();
-        OrderSend();
+        Verifyform();
     }
 
 main();
