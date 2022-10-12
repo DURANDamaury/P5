@@ -1,3 +1,5 @@
+function p(message) {console.log(JSON.parse(JSON.stringify(message)))}; // console log sans référence
+
 // API
 const apiUrl = "http://localhost:3000/api/products";
 async function fetchData() 
@@ -7,6 +9,10 @@ async function fetchData()
         .catch((err) => console.log(err));
     }
 
+/* *************************************************************
+   *** Retourne les infos grace à l'ID                       ***
+   *** CE = ID ; CS = bom,prix,imageurl,description,textealt ***
+   ************************************************************* */ 
 async function searchInfos(canapeID) 
     {
     let listeCanape = await fetchData();
@@ -25,6 +31,10 @@ let commande = localStorage.getItem("basket");
 let itemList = JSON.parse(commande);
 let NumberOfArticles = itemList.length
 
+/* ******************************
+   *** mise à jour du panier  ***
+   *** CE = panier ; CS = nul ***
+   ****************************** */
 function setBasket(basket) 
     {
     localStorage.setItem("basket", JSON.stringify(basket));
@@ -126,6 +136,10 @@ function TotalQuantity()
 }
 //
 
+/* *****************************************
+   *** Génere la dom pour chaque article ***
+   *** CE = nul ; CS = nul               ***
+   ***************************************** */
 async function DomGeneration()
     {
         for (let i=0 ; i<NumberOfArticles ; i++)
@@ -193,14 +207,154 @@ function ModifyQuantity()
                 })
             })
     }
-/* **************************************************************** */
+/* *************************************************************************
+   *** module d'envoi du formulaire. On vérifie les données tout de même ***
+   ************************************************************************* */
 function OrderSend()
     {
         const OrderButton = document.getElementById('order');
-        OrderButton.addEventListener('click',OrderTraitment);
+        OrderButton.addEventListener('click',function(e)
+            {
+                e.preventDefault();
+                const VerificationFormulaire = VerifFinal(); // La fonction renverra True si tout est bon. Sinon False
+                if (VerificationFormulaire == false)
+                    {
+                    //une erreur est survenue, on abandonne
+                    return;
+                    }
+                else
+                    {
+                    //Tout est ok, on traite le formulaire
+                    contact = constructContactObject(); // on récupère l'objet contact
+                    product = constructProduitTab(); //on récupère le tableau de produit
+                    //console.log('contact = ',contact)
+                    //console.log('product = ',product)
+                    reponse=SendToApi(contact,product); //on envoi à l'api
+                    console.log(reponse)
+                    }
+            })
     }
+
+                    /* ********************************************************************************
+                    *** Fonction de vérification finale. On regarde si tous les champs sont remplis ***
+                    *** et si aucun message d'erreur n'est écrit en dessous pour être certain       ***
+                    *** CE=Nul CS=True si pas d'erreur, sinon False                                 ***
+                    *********************************************************************************** */
+                    function VerifFinal()
+                        {
+                            // On commence par vérifier si les inputs sont vides
+                            const InputIds = ['firstName','lastName','address','city','email']
+                            let NumberError = 0;
+
+                            InputIds.forEach(element => 
+                                {
+                                ReadInput = document.getElementById(element).value;
+                                if (ReadInput == '') {NumberError ++}
+                                });
+                            // On vérifie qu'aucun message d'erreur n'est affiché
+                            const ErrorIds = ['firstNameErrorMsg','lastNameErrorMsg','addressErrorMsg','cityErrorMsg','emailErrorMsg']
+                            ErrorIds.forEach(element =>
+                                {
+                                ReadError = document.getElementById(element).textContent;
+                                if (ReadError != '') {NumberError ++}
+                                })
+                            if (NumberError != 0){return false}
+                            else {return true}
+                        }
+
+                    /* ******************************
+                       *** Génère l'objet contact ***
+                       *** CE = nul ; CS = objet  ***
+                       ****************************** */
+                        function constructContactObject()
+                            {
+                            class objContact
+                                {
+                                    constructor(firstName,lastName,address,city,email)
+                                    {
+                                        this.firstName = firstName;
+                                        this.lastName = lastName;
+                                        this.address = address;
+                                        this.city = city;
+                                        this.email = email;
+                                    }
+                                }
+                                const InputIds = ['firstName','lastName','address','city','email']
+                                let InputData = [];
+                                InputIds.forEach(element => 
+                                    {
+                                    ReadInput = document.getElementById(element).value;
+                                    InputData.push(ReadInput);
+                                    });
+                                const [firstName, lastName, address, city, email]=InputData
+                                const contact = new objContact(firstName, lastName, address, city, email);
+                                //p(contact)
+                                return contact;
+                            }
+                    /* ************************************
+                       *** Génère le tableau de produit ***
+                       *** CE = nul ; CS = Tableau      ***
+                       ************************************ */
+                        function constructProduitTab()
+                            {
+                                let commande = localStorage.getItem("basket");
+                                let itemList = JSON.parse(commande);
+                                product = [];
+                                itemList.forEach(element =>
+                                    {
+                                        Id = element.Id
+                                        product.push(Id);
+                                    })
+                                return product;
+                            }
+                    /*  *************************************************
+                        *** Envoi à l'api                             ***
+                        *** CE = obj Contact, Tab Product             ***
+                        *** CS = Retourne l'objet contact, le tableau ***
+                        *** produits et orderId (string)              ***
+                        ************************************************* */
+                        async function SendToApi(contact,product)
+                            {
+                                let order = {contact: contact,products: product};
+                                const apiUrlPost = "http://localhost:3000/api/products/order";
+                                try
+                                    {
+                                    const response= await fetch(apiUrlPost, 
+                                        {
+                                            method: 'POST',
+                                            headers: 
+                                                { 
+                                                'Accept': 'application/json', 
+                                                'Content-Type': 'application/json' 
+                                                },
+                                            body: JSON.stringify(order)
+                                        });
+                                    if (response.ok) 
+                                        {
+                                            const reponse = await response.json();
+                                            return reponse;
+                                        }
+                                    else
+                                        {
+                                            throw new Error("erreur :", response.status)
+                                        }
+                                    }
+                                    
+                                catch (error)
+                                    {
+                                        console.log('erreur dans le post: ',error);
+                                    }
+                            }
+                        
+                        
+
+
+
+
+
 /* ***************************************************************************************
    *** génère l'eventListener pour la vérification du formulaire à partir d'un tableau ***
+   *** CE = nul ; CS = nul                                                             ***
    *************************************************************************************** */ 
 function Verifyform()
     {
@@ -245,48 +399,33 @@ function Verifyform()
     }
 
 
-    /* **************************************************************
-       *** Cette fonction crée l'eventlistener pour le formulaire ***
-       ************************************************************** */
-    function VerifyInput(ElementTest,Mask,IdMsg,ErrorMsg)
-    {
-        document.getElementById(ElementTest).addEventListener('change', function()
-        {
-            const Input = document.getElementById(ElementTest).value;
-            const Chiffres = Mask;
-            if (Chiffres.test(Input))
-            {
-                const ErrorMessage = document.getElementById(IdMsg);
-                ErrorMessage.textContent = '';
-            }
-            else           
-            {
-                const ErrorMessage = document.getElementById(IdMsg);
-                ErrorMessage.textContent = ErrorMsg;
-            }
-        });
-    }
-/* *************************************************************** */
-// Génère l'objet contact                                          //
-/* *************************************************************** */
-function setContact()
-    {
-        const Prenom = document.getElementById('firstName').value;
-        const Nom = document.getElementById('lastName').value;
-        const Adresse = document.getElementById('address').value;
-        const Ville = document.getElementById('city').value;
-        const Email = document.getElementById('email').value;
+                /* *****************************************************************************
+                *** Crée l'eventlistener pour le formulaire                                  ***
+                *** CE = id de l'input, Mask Regex, Id du message d'erreur, message d'erreur ***
+                *** CS = nul                                                                 ***
+                ******************************************************************************** */
+                function VerifyInput(ElementTest,Mask,IdMsg,ErrorMsg)
+                {
+                    document.getElementById(ElementTest).addEventListener('change', function()
+                    {
+                        const Input = document.getElementById(ElementTest).value;
+                        const Chiffres = Mask;
+                        if (Chiffres.test(Input))
+                        {
+                            const ErrorMessage = document.getElementById(IdMsg);
+                            ErrorMessage.textContent = '';
+                        }
+                        else           
+                        {
+                            const ErrorMessage = document.getElementById(IdMsg);
+                            ErrorMessage.textContent = ErrorMsg;
+                        }
+                    });
+                }
 
-        const contact = 
-            {
-            firstName: Prenom,
-            lastName: Nom,
-            address: Adresse,
-            city: Ville,
-            email: Email
-            }
-    }
-/* **************************************************************** */
+/* **************************************************************** 
+   ********************* MAIN *************************************
+   **************************************************************** */
 async function main()
     {
         await DomGeneration()
@@ -294,6 +433,7 @@ async function main()
         Delete();
         ModifyQuantity();
         Verifyform();
+        OrderSend();
     }
 
 main();
