@@ -245,7 +245,7 @@ function ModifyQuantityListener()
 function OrderSend()
     {
         const OrderButton = document.getElementById('order');
-        OrderButton.addEventListener('click',function(e)
+        OrderButton.addEventListener('click',async function(e)
             {
                 e.preventDefault();
                 const VerificationFormulaire = VerifFinal(); // La fonction renverra True si tout est bon. Sinon False
@@ -261,7 +261,7 @@ function OrderSend()
                     product = constructProduitTab(); //on récupère le tableau de produit
                     //console.log('contact = ',contact)
                     //console.log('product = ',product)
-                    reponse= SendToApi(contact,product); //on envoi à l'api
+                    reponse= await SendToApi(contact,product); //on envoi à l'api
                     console.log(reponse)
                     }
             })
