@@ -184,29 +184,61 @@ function Delete()
                 })
             })
         }
-/* **************************************************************** */
-function ModifyQuantity()
-    {
-        const QuantityLevel = document.querySelectorAll('.itemQuantity');
-        QuantityLevel.forEach((item,CaseNumber) =>
-            {
-            item.addEventListener('change', event =>
+/* *************************************************
+*** Retourne l'id d'un canape en fonction du nom ***
+*** CE = nom ; CS = ID                           ***
+************************************************* */
+async function FindIdByName(name)
+        {
+            listeCanape = await fetchData()
+            for (canape of listeCanape) 
                 {
-                //lecture de la valeur
-                const QuantityCase = event.target;
-                const QuantityValue = QuantityCase.value;
-                //modification du panier
-                let commande = localStorage.getItem("basket");
-                let itemList = JSON.parse(commande);
-                DomItemQuantity = itemList[CaseNumber];
-                DomItemQuantity.Quantity = QuantityValue;
-                setBasket(itemList);
+                idRead = canape._id;
+                nameRead = canape.name;
+                if (nameRead === name) 
+                    {
+                    return idRead;
+                    }
+                }
+        }
+/* ***************************************
 
-                //mise à jour du total
-                TotalQuantity();
-                })
-            })
+*************************************** */
+async function ModifyQuantity()
+    {
+        //lecture de la valeur
+        const QuantityCase = event.target;
+        const QuantityValue = QuantityCase.value;
+        const CartItemContentFind = QuantityCase.closest('.cart__item__content')
+        const CartItemContentDescriptionFind = CartItemContentFind.firstChild
+        const NameProductQuantity = CartItemContentDescriptionFind.querySelector('h2').textContent
+        // NameProductQuantity contient le nom du canapé, il nous faut son id, on va donc aller le chercher dans l'API
+        const IdProductQuantity = await FindIdByName(NameProductQuantity);
+        const ColorProductQuantity =CartItemContentDescriptionFind.querySelector('p').textContent
+
+        let commande = localStorage.getItem("basket");
+        let itemList = JSON.parse(commande);
+        for (let i in itemList)
+            {
+                if (itemList[i].Id == IdProductQuantity && itemList[i].Color == ColorProductQuantity)
+                {
+                    //nous sommes dans le bon objet, nous pouvons lui changer sa quantité
+                    itemList[i].Quantity = QuantityValue;
+                    setBasket(itemList);
+                    TotalQuantity();
+                }
+            }
     }
+/* **************************************************************** */
+function ModifyQuantityListener()
+        {
+            const QuantityLevel = document.querySelectorAll('.itemQuantity');
+             QuantityLevel.forEach((item,CaseNumber) => 
+                {
+                item.addEventListener('change', event => ModifyQuantity())
+                })               
+        }
+
 /* *************************************************************************
    *** module d'envoi du formulaire. On vérifie les données tout de même ***
    ************************************************************************* */
@@ -229,7 +261,7 @@ function OrderSend()
                     product = constructProduitTab(); //on récupère le tableau de produit
                     //console.log('contact = ',contact)
                     //console.log('product = ',product)
-                    reponse=SendToApi(contact,product); //on envoi à l'api
+                    reponse= SendToApi(contact,product); //on envoi à l'api
                     console.log(reponse)
                     }
             })
@@ -431,7 +463,7 @@ async function main()
         await DomGeneration()
         TotalQuantity();
         Delete();
-        ModifyQuantity();
+        ModifyQuantityListener();
         Verifyform();
         OrderSend();
     }
