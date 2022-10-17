@@ -1,6 +1,13 @@
 function p(message) {console.log(JSON.parse(JSON.stringify(message)))}; // console log sans référence
+// Local storage
+let commande = localStorage.getItem("basket");
+let itemList = JSON.parse(commande);
+let NumberOfArticles = itemList.length
 
-// API
+/*  **********************************************************
+    *** API - Récupération du tableau de tous les éléments ***
+    *** CE = null ; CS = [éléments]                        ***
+    ********************************************************** */
 const apiUrl = "http://localhost:3000/api/products";
 async function fetchData() 
     {
@@ -11,25 +18,14 @@ async function fetchData()
 
 /* *************************************************************
    *** Retourne les infos grace à l'ID                       ***
-   *** CE = ID ; CS = bom,prix,imageurl,description,textealt ***
+   *** CE = ID ; CS = objet du canape                        ***
    ************************************************************* */ 
 async function searchInfos(canapeID) 
     {
-    let listeCanape = await fetchData();
-    for (canapeNumber of listeCanape) 
-        {
-        idRead = canapeNumber._id;
-        if (idRead === canapeID) 
-            {
-            return [canapeNumber.name,canapeNumber.price,canapeNumber.imageUrl,canapeNumber.description,canapeNumber.altTxt];
-            }
-        }
+        return fetch(`http://localhost:3000/api/products/${canapeID}`)
+            .then((data) => data.json())
+            .catch((err) => console.log(err));
     }
-
-// Local storage
-let commande = localStorage.getItem("basket");
-let itemList = JSON.parse(commande);
-let NumberOfArticles = itemList.length
 
 /* ******************************
    *** mise à jour du panier  ***
@@ -39,17 +35,19 @@ function setBasket(basket)
     {
     localStorage.setItem("basket", JSON.stringify(basket));
     }
-/* ********************************************* */
-// Construction
+/*  *********************************************
+    *** Construction de la Dom pour 1 canapé  ***
+    *** CE = 1 obj canape ; CS = null         ***
+    ********************************************* */
 async function DisplayArticle (canape)
     {
         // récupération des infos du produit
         let infos = await searchInfos(canape.Id);
-        let name = infos[0];
-        let price = infos[1];
-        let imgUrl = infos[2];
-        let description = infos[3];
-        let altTxt = infos[4];
+        let name = infos.name;
+        let price = infos.price;
+        let imgUrl = infos.imageUrl;
+        //let description = infos[3];
+        let altTxt = infos.altTxt;
         // construction de la Dom
         let DomIdItem = document.querySelector('#cart__items');
         // <article>
@@ -108,7 +106,7 @@ async function DisplayArticle (canape)
                         DomDeleteItem.setAttribute('class','deleteItem');
                         DomDeleteItem.textContent = "Supprimer";
 
-        // Génération de la Dom
+        // Construction
         DomDelete.append(DomDeleteItem);
         DomQuantity.append(DomQte,DomInputQuantity);
         DomSettings.append(DomQuantity,DomDelete);
@@ -119,22 +117,49 @@ async function DisplayArticle (canape)
         DomIdItem.appendChild(DomAddArticle);
     }
 
+/*  *****************************************************
+    *** Calcul et affichage du nombre total d'article ***
+    *** CE = null ; CS = null                         ***
+    ***************************************************** */    
 function TotalQuantity()
-{
-    let commande = localStorage.getItem("basket");
-    let itemList = JSON.parse(commande);
-    let NumberOfArticles = itemList.length
-
-    let Total = 0;
-    for (let i=0; i<NumberOfArticles ; i++)
     {
-        let canape = itemList[i];
-        NewValue = JSON.parse(canape.Quantity)
-        Total += NewValue;
+        let commande = localStorage.getItem("basket");
+        let itemList = JSON.parse(commande);
+        let NumberOfArticles = itemList.length
+
+        let Total = 0;
+        for (let i=0; i<NumberOfArticles ; i++)
+        {
+            let canape = itemList[i];
+            let NewValue = JSON.parse(canape.Quantity)
+            Total += NewValue;
+        }
+        document.querySelector('#totalQuantity').textContent = Total;
     }
-    document.querySelector('#totalQuantity').textContent = Total;
-}
-//
+
+/*  *****************************************
+    *** Calcul et affichage du prix total ***
+    *** CE = null ; CS = null             ***
+    ***************************************** */
+async function TotalPrice()
+    {
+        let commande = localStorage.getItem("basket");
+        let itemList = JSON.parse(commande);
+        let NumberOfArticles = itemList.length;
+
+        let Total = 0;
+        for (let i=0; i<NumberOfArticles ; i++)
+            {
+                let canape = itemList[i];
+                let canapeId = canape.Id
+                let canapeQuantity = parseInt(canape.Quantity);
+                let Infos = await searchInfos(canapeId);
+                let price = parseInt(Infos.price);
+                let TotalElementPrice = price*=canapeQuantity;
+                Total += TotalElementPrice;
+            }
+        document.querySelector('#totalPrice').textContent = Total;
+        }
 
 /* *****************************************
    *** Génere la dom pour chaque article ***
@@ -149,7 +174,10 @@ async function DomGeneration()
             }
         return;
     }
-/* ************************************************************ */
+/*  ************************************************************ 
+    *** Suppression d'un article du panier et de la Dom      ***
+    *** CE = null ; CS= null                                 ***
+    ************************************************************ */
 function Delete()
     {
         const boutonDelete = document.querySelectorAll('.deleteItem');
@@ -159,18 +187,6 @@ function Delete()
                 {
                 const BoutonId = event.target;
                 const FindCart__item = BoutonId.closest('.cart__item');
-                    /* ************************************************************************************* */
-                    /* ********          Tentative de résolution du bug par suppréssion des eventlist ****** */
-                    /* ************************************************************************************* */
-                    //on supprime l'élément 'supprimer" de l'eventlist
-                    this.removeEventListener('click',Delete);
-                    //on recherche l'elément quantité pour le supprimer de l'eventlist
-                    const EventQuantityButtonFind1 = BoutonId.closest('.cart__item__content__settings');
-                    const EventQuantityButtonFind2 = EventQuantityButtonFind1.childNodes
-                    const EventQuantityButtonFind3 = EventQuantityButtonFind2[0];
-                    const EventQuantityButtonFind4 = EventQuantityButtonFind3.childNodes
-                    const EventQuantityButton = EventQuantityButtonFind4[1];
-                    EventQuantityButton.removeEventListener('change', ModifyQuantity);
                 //modification du panier
                 let commande = localStorage.getItem("basket");
                 let itemList = JSON.parse(commande);
@@ -181,6 +197,7 @@ function Delete()
                 FindCart__item.remove();
                 NumberOfArticles--;
                 TotalQuantity();
+                TotalPrice()
                 })
             })
         }
@@ -226,6 +243,7 @@ async function ModifyQuantity()
                     itemList[i].Quantity = QuantityValue;
                     setBasket(itemList);
                     TotalQuantity();
+                    TotalPrice();
                 }
             }
     }
@@ -233,7 +251,7 @@ async function ModifyQuantity()
 function ModifyQuantityListener()
         {
             const QuantityLevel = document.querySelectorAll('.itemQuantity');
-             QuantityLevel.forEach((item,CaseNumber) => 
+            QuantityLevel.forEach((item,CaseNumber) => 
                 {
                 item.addEventListener('change', event => ModifyQuantity())
                 })               
@@ -378,12 +396,6 @@ function OrderSend()
                                     }
                             }
                         
-                        
-
-
-
-
-
 /* ***************************************************************************************
    *** génère l'eventListener pour la vérification du formulaire à partir d'un tableau ***
    *** CE = nul ; CS = nul                                                             ***
@@ -411,8 +423,8 @@ function Verifyform()
             // Id html p pour l'affichage de l'erreur
             // Message d'erreur à afficher
 
-        let Prenom = new InputTab('firstName',RegexNomPrenom,'firstNameErrorMsg','Le prenom doit contenir 2 lettres.')
-        let Nom = new InputTab('lastName',RegexNomPrenom,'lastNameErrorMsg','Le nom doit contenir 2 lettres.')
+        let Prenom = new InputTab('firstName',RegexNomPrenom,'firstNameErrorMsg','Prenom invalide.')
+        let Nom = new InputTab('lastName',RegexNomPrenom,'lastNameErrorMsg','Nom invalide.')
         let Adresse = new InputTab('address',RegexAdresse,'addressErrorMsg',"l'adresse sous la forme: N°, rue.")
         let Ville = new InputTab('city',RegexNomPrenom,'cityErrorMsg','Nom de ville invalide')
         let Mail = new InputTab('email',RegexMail,'emailErrorMsg','Email invalide')
@@ -462,6 +474,7 @@ async function main()
     {
         await DomGeneration()
         TotalQuantity();
+        TotalPrice();
         Delete();
         ModifyQuantityListener();
         Verifyform();

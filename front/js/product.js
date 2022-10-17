@@ -1,10 +1,9 @@
 const apiUrl = "http://localhost:3000/api/products";
 
-function printm(message) 
-    {
-    console.log(message);
-    }
-
+/*  ************************************************ 
+    *** API Récupération du tableau des éléments ***
+    *** CE = null ; CS = []                      ***
+    ************************************************ */
 async function fetchData() 
     {
     return fetch(apiUrl)
@@ -12,6 +11,10 @@ async function fetchData()
         .catch((err) => console.log(err));
     }
 
+/*  ************************************
+    *** Récupération de l'Id via URL ***
+    *** CE = null ; CS = ID          ***
+    ************************************ */
 function getid() 
     {
     const url = new URLSearchParams(window.location.search);
@@ -21,17 +24,21 @@ function getid()
     return canapeID;
     }
 
+/*  **********************************************
+    *** API Récupération d'un produit via l'ID ***
+    *** CE = ID ; CS = {canape}                *** 
+    ********************************************** */
 async function searchID(canapeID) 
     {
-    let listeCanape = await fetchData();
-    for (canape of listeCanape) {
-        idRead = canape._id;
-        if (idRead === canapeID) {
-        return canape;
-        }
-    }
+        return fetch(`http://localhost:3000/api/products/${canapeID}`)
+            .then((data) => data.json())
+            .catch((err) => console.log(err));
     }
 
+/*  *********************************************
+    *** Construction de la dom pour le canape ***
+    *** CE = {canape} ; CS = null             ***
+    ********************************************* */
 function DOMconstruct(canape) 
     {
     //ajout de l'image
@@ -60,6 +67,10 @@ function DOMconstruct(canape)
         });
     }
 
+/*  ***********************************************
+    *** Récupération du panier du local storage ***
+    *** CE = null ; CS = [panier]               ***
+    *********************************************** */
 function getBasket() 
     {
     // Récupération du storage.
@@ -78,11 +89,19 @@ function getBasket()
         }
     }
 
+/*  ********************************************
+    *** Envoi du panier dans le localStorage ***
+    *** CE = panier ; CS = null              ***
+    ******************************************** */
 function setBasket(basket) 
     {
     localStorage.setItem("basket", JSON.stringify(basket));
     }
 
+/*  *********************************************
+    *** Verification et mise à jour du panier ***
+    *** CE = {panier} ; CS = null             ***
+    ********************************************* */
 function verifyEntry(panierAEnvoyer) 
     {
     let basket = getBasket();
@@ -90,9 +109,7 @@ function verifyEntry(panierAEnvoyer)
         {
             const element = basket[i];
 
-            if (
-            panierAEnvoyer.Id === element.Id &&
-            panierAEnvoyer.Color === element.Color) 
+            if (panierAEnvoyer.Id === element.Id && panierAEnvoyer.Color === element.Color) 
                 {
                 element.Quantity = panierAEnvoyer.Quantity + element.Quantity;
                 setBasket(basket);
@@ -103,7 +120,10 @@ function verifyEntry(panierAEnvoyer)
     setBasket(basket);
     return;
     }
-
+/*  **********************************************
+    *** Test du bouton commander et traitement ***
+    *** CE = null ; CS = nul                   ***
+    ********************************************** */
 function buttonWatched() 
 {
   //mise en écoute du click sur le bouton panier
@@ -149,7 +169,9 @@ function buttonWatched()
         verifyEntry(panierAEnvoyer);
         });
 }
-
+/*  ****************************
+    *** Fonction principale  ***
+    **************************** */
 async function main() 
     {
     canapeID = getid(); //recupère l'id dans l'url
@@ -159,5 +181,6 @@ async function main()
     //localStorage.clear(); //a effacer vide le storage pour test
     buttonWatched(); // fonction de click au panier
     }
-
+    
+// Execution du script
 main();
