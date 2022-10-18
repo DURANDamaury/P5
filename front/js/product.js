@@ -84,7 +84,7 @@ function getBasket()
     else 
         {
             // Si mon panier n'est pas vide, alors je renvoie le panier avec son contenu
-            // et bien je le parse pour pouvoir lire ses données.
+            // et je le parse pour pouvoir lire ses données.
             return JSON.parse(basket);
         }
     }
@@ -95,6 +95,21 @@ function getBasket()
     ******************************************** */
 function setBasket(basket) 
     {
+        //tri
+        console.log('panier avant tri = ',basket)
+        basket.sort(function triage(a, b) 
+            {
+            if (a.Id < b.Id) return -1;   //le deuxième id devrait être en premier
+            if (a.Id > b.Id) return 1;    //le deuxième id devrait être en deuxième
+            if (a.Id = b.Id)              //les deux id sont identiques, on va réorganiser par couleur
+                {
+                if (a.Color < b.Color) return -1;   //la
+                if (a.Color > b.Color) return 1;
+                }
+            return 0;                       //on ne change plus rien
+            });
+
+        console.log('panier après tri = ',basket)
     localStorage.setItem("basket", JSON.stringify(basket));
     }
 
@@ -120,6 +135,34 @@ function verifyEntry(panierAEnvoyer)
     setBasket(basket);
     return;
     }
+/**
+ * Test si la couleur a été changée.
+ * si c'est le cas, le texte du bouton passe à 'ajouter au panier'
+ */
+function ColorChange()
+    {
+        const color = document.querySelector('#colors')
+        color.onchange = function()
+        {
+            const Bouton = document.querySelector('#addToCart')
+            Bouton.textContent = 'Ajouter au panier'
+        }
+    }
+/**
+ * Teste sir la quantité change
+ * si c'est le cas, le texte du bouton passe à 'ajouter au panier'
+ */
+function QuantityChange()
+    {
+        const color = document.querySelector('#quantity')
+        color.onchange = function()
+        {
+            const Bouton = document.querySelector('#addToCart')
+            Bouton.textContent = 'Ajouter au panier'
+        }
+    }
+
+
 /*  **********************************************
     *** Test du bouton commander et traitement ***
     *** CE = null ; CS = nul                   ***
@@ -148,16 +191,18 @@ function buttonWatched()
         //quantityValue contient la quantité
 
         //Traitement des erreurs de valeurs
-        if (quantityValue == 0) 
+        if (colorValue == "") 
             {
-            alert("Merci de renseigner la quantité");
-            return;
-            } 
-        else if (colorValue == "") 
-            {
-            alert("Merci de choisir une couleur");
-            return;
+                const Bouton = document.querySelector('#addToCart')
+                Bouton.textContent = 'Merci de choisir une couleur'
+                return;
             }
+        else if(quantityValue == 0) 
+            {
+                const Bouton = document.querySelector('#addToCart')
+                Bouton.textContent = 'Merci de renseigner la quantité'
+                return;
+            } 
         //envoi à la page panier
         let panierAEnvoyer = 
             {
@@ -167,6 +212,10 @@ function buttonWatched()
             };
 
         verifyEntry(panierAEnvoyer);
+        const Bouton = document.querySelector('#addToCart')
+        Bouton.textContent = 'Le produit a bien été ajouté.'
+        document.getElementById('quantity').value = 0;
+        document.getElementById('colors').value = '';
         });
 }
 /*  ****************************
@@ -180,6 +229,8 @@ async function main()
 
     //localStorage.clear(); //a effacer vide le storage pour test
     buttonWatched(); // fonction de click au panier
+    ColorChange();
+    QuantityChange();
     }
     
 // Execution du script
