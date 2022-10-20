@@ -1,14 +1,11 @@
 function p(message) {console.log(JSON.parse(JSON.stringify(message)))}; // console log sans référence
 // Local storage
-let commande = localStorage.getItem("basket");
-let itemList = JSON.parse(commande);
-let NumberOfArticles = itemList.length
 
-/*  **********************************************************
-    *** API - Récupération du tableau de tous les éléments ***
-    *** CE = null ; CS = [éléments]                        ***
-    ********************************************************** */
-const apiUrl = "http://localhost:3000/api/products";
+
+/** **********************************************************
+ *  *** API - Récupération du tableau de tous les éléments ***
+ * @returns {Promise<{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}[]>}
+ ********************************************************** */
 async function fetchData() 
     {
     return fetch(apiUrl)
@@ -16,10 +13,11 @@ async function fetchData()
         .catch((err) => console.log(err));
     }
 
-/* *************************************************************
-   *** Retourne les infos grace à l'ID                       ***
-   *** CE = ID ; CS = objet du canape                        ***
-   ************************************************************* */ 
+/** *************************************************************
+ *  *** Retourne les infos grace à l'ID                       ***
+ * @param {string} canapeID 
+ * @returns {{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}}
+*************************************************************  */
 async function searchInfos(canapeID) 
     {
         return fetch(`http://localhost:3000/api/products/${canapeID}`)
@@ -35,12 +33,14 @@ function setBasket(basket)
     {
     localStorage.setItem("basket", JSON.stringify(basket));
     }
-/*  *********************************************
-    *** Construction de la Dom pour 1 canapé  ***
-    *** CE = 1 obj canape ; CS = null         ***
-    ********************************************* */
+
+/** *********************************************
+ *  *** Construction de la Dom pour 1 canapé  ***
+ * @param {{Id: string, Color: string, Quantity: number}} canape 
+ ********************************************* */
 async function DisplayArticle (canape)
     {
+
         // récupération des infos du produit
         let infos = await searchInfos(canape.Id);
         let name = infos.name;
@@ -198,40 +198,26 @@ function Delete()
                 NumberOfArticles--;
                 TotalQuantity();
                 TotalPrice()
+                if (NumberOfArticles == 0)
+                    {
+                        EmptyBasket()
+                    }
                 })
             })
         }
-/* *************************************************
-*** Retourne l'id d'un canape en fonction du nom ***
-*** CE = nom ; CS = ID                           ***
-************************************************* */
-async function FindIdByName(name)
-        {
-            listeCanape = await fetchData()
-            for (canape of listeCanape) 
-                {
-                idRead = canape._id;
-                nameRead = canape.name;
-                if (nameRead === name) 
-                    {
-                    return idRead;
-                    }
-                }
-        }
-/* ***************************************
 
-*************************************** */
+/*  **********************************************
+*** Modification de la quantité pour le canapé ***
+*********************************************** */
 async function ModifyQuantity()
     {
         //lecture de la valeur
         const QuantityCase = event.target;
         const QuantityValue = QuantityCase.value;
-        const CartItemContentFind = QuantityCase.closest('.cart__item__content')
-        const CartItemContentDescriptionFind = CartItemContentFind.firstChild
-        const NameProductQuantity = CartItemContentDescriptionFind.querySelector('h2').textContent
-        // NameProductQuantity contient le nom du canapé, il nous faut son id, on va donc aller le chercher dans l'API
-        const IdProductQuantity = await FindIdByName(NameProductQuantity);
-        const ColorProductQuantity =CartItemContentDescriptionFind.querySelector('p').textContent
+
+        const CartItem = QuantityCase.closest('.cart__item')
+        const IdProductQuantity = CartItem.dataset.id;
+        const ColorProductQuantity = CartItem.dataset.color;
 
         let commande = localStorage.getItem("basket");
         let itemList = JSON.parse(commande);
@@ -247,19 +233,21 @@ async function ModifyQuantity()
                 }
             }
     }
-/* **************************************************************** */
+//  ***************************************************
+//  *** crée le listener pour chaque input quantity ***
+// ***************************************************
 function ModifyQuantityListener()
         {
             const QuantityLevel = document.querySelectorAll('.itemQuantity');
-            QuantityLevel.forEach((item,CaseNumber) => 
+            QuantityLevel.forEach((item) => 
                 {
                 item.addEventListener('change', event => ModifyQuantity())
                 })               
         }
 
-/* *************************************************************************
-   *** module d'envoi du formulaire. On vérifie les données tout de même ***
-   ************************************************************************* */
+//  *************************************************************************
+//  *** module d'envoi du formulaire. On vérifie les données tout de même ***
+//  *************************************************************************
 function OrderSend()
     {
         const OrderButton = document.getElementById('order');
@@ -277,10 +265,10 @@ function OrderSend()
                     //Tout est ok, on traite le formulaire
                     contact = constructContactObject(); // on récupère l'objet contact
                     product = constructProduitTab(); //on récupère le tableau de produit
-                    //console.log('contact = ',contact)
-                    //console.log('product = ',product)
-                    reponse= await SendToApi(contact,product); //on envoi à l'api
-                    console.log(reponse)
+                    commande= await SendToApi(contact,product); //on envoi à l'api
+                    const link = 'confirmation.html?orderId='
+                    //console.log(link,commande.orderId)
+                    document.location.href = link+commande.orderId
                     }
             })
     }
@@ -470,8 +458,9 @@ function Verifyform()
 /* **************************************************************** 
    ********************* MAIN *************************************
    **************************************************************** */
-async function main()
+async function ObjectsInBasket()
     {
+        
         await DomGeneration()
         TotalQuantity();
         TotalPrice();
@@ -481,4 +470,33 @@ async function main()
         OrderSend();
     }
 
+function EmptyBasket ()
+    {
+        const PanierVideMessage = document.getElementById('cartAndFormContainer').querySelector('h1');
+        PanierVideMessage.textContent= 'Votre panier est vide'
+        const PriceSelect = document.querySelector('.cart')
+        PriceSelect.remove()
+    }
+
+function main()
+    {
+        let commande = localStorage.getItem("basket");
+        if (commande && commande != '[]')
+            {
+                //le panier existe
+                ObjectsInBasket();
+            }
+        else
+            {
+                //le panier n'existe pas ou est vide
+                EmptyBasket()
+            }
+    }
+
+// **************************************************
+// ***                    START                   ***
+    let commande = localStorage.getItem("basket");
+    let itemList = JSON.parse(commande);
+    let NumberOfArticles = itemList.length;
+    const apiUrl = "http://localhost:3000/api/products";
 main();

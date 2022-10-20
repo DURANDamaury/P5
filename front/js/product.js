@@ -1,9 +1,9 @@
 const apiUrl = "http://localhost:3000/api/products";
 
-/*  ************************************************ 
-    *** API Récupération du tableau des éléments ***
-    *** CE = null ; CS = []                      ***
-    ************************************************ */
+/** ************************************************
+ *  *** API Récupération du tableau des éléments ***
+ * @returns {Promise<{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}[]>}
+ *************************************************/
 async function fetchData() 
     {
     return fetch(apiUrl)
@@ -11,10 +11,10 @@ async function fetchData()
         .catch((err) => console.log(err));
     }
 
-/*  ************************************
-    *** Récupération de l'Id via URL ***
-    *** CE = null ; CS = ID          ***
-    ************************************ */
+/** ************************************
+ *  *** Récupération de l'Id via URL ***
+ * @returns {string}                 ***
+ *************************************/
 function getid() 
     {
     const url = new URLSearchParams(window.location.search);
@@ -24,10 +24,11 @@ function getid()
     return canapeID;
     }
 
-/*  **********************************************
-    *** API Récupération d'un produit via l'ID ***
-    *** CE = ID ; CS = {canape}                *** 
-    ********************************************** */
+/** ************************************************************
+ *  *** API Récupération d'un produit via l'ID               ***
+ *  @param {string} canapeID                                 ***
+ *  @returns {Promise<{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}>}
+ **************************************************************/
 async function searchID(canapeID) 
     {
         return fetch(`http://localhost:3000/api/products/${canapeID}`)
@@ -35,10 +36,10 @@ async function searchID(canapeID)
             .catch((err) => console.log(err));
     }
 
-/*  *********************************************
-    *** Construction de la dom pour le canape ***
-    *** CE = {canape} ; CS = null             ***
-    ********************************************* */
+/** *********************************************
+ *  *** Construction de la dom pour le canape ***
+ * @param {{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}} canape 
+ ********************************************* */
 function DOMconstruct(canape) 
     {
     //ajout de l'image
@@ -67,10 +68,10 @@ function DOMconstruct(canape)
         });
     }
 
-/*  ***********************************************
-    *** Récupération du panier du local storage ***
-    *** CE = null ; CS = [panier]               ***
-    *********************************************** */
+/** ***********************************************
+ *  *** Récupération du panier du local storage ***
+ * @returns {{Id: string, Color: string, Quantity: number}[]}
+ *********************************************** */
 function getBasket() 
     {
     // Récupération du storage.
@@ -89,14 +90,13 @@ function getBasket()
         }
     }
 
-/*  ********************************************
-    *** Envoi du panier dans le localStorage ***
-    *** CE = panier ; CS = null              ***
-    ******************************************** */
+/** ********************************************
+ *  *** Envoi du panier dans le localStorage ***
+ * @param {{Id: string, Color: string, Quantity: number}[]} basket 
+ ******************************************** */
 function setBasket(basket) 
     {
         //tri
-        console.log('panier avant tri = ',basket)
         basket.sort(function triage(a, b) 
             {
             if (a.Id < b.Id) return -1;   //le deuxième id devrait être en premier
@@ -109,14 +109,14 @@ function setBasket(basket)
             return 0;                       //on ne change plus rien
             });
 
-        console.log('panier après tri = ',basket)
     localStorage.setItem("basket", JSON.stringify(basket));
     }
 
-/*  *********************************************
-    *** Verification et mise à jour du panier ***
-    *** CE = {panier} ; CS = null             ***
-    ********************************************* */
+/** *********************************************
+ *  *** Verification et mise à jour du panier ***
+ * @param {{Id: string, Color: string, Quantity: number}[]} panierAEnvoyer 
+ * @returns 
+ ********************************************* */
 function verifyEntry(panierAEnvoyer) 
     {
     let basket = getBasket();
@@ -135,10 +135,11 @@ function verifyEntry(panierAEnvoyer)
     setBasket(basket);
     return;
     }
-/**
- * Test si la couleur a été changée.
- * si c'est le cas, le texte du bouton passe à 'ajouter au panier'
- */
+
+/** ******************************************************************
+ * Test si la couleur a été changée.                               ***
+ * si c'est le cas, le texte du bouton passe à 'ajouter au panier' ***
+ ****************************************************************** */
 function ColorChange()
     {
         const color = document.querySelector('#colors')
@@ -148,10 +149,10 @@ function ColorChange()
             Bouton.textContent = 'Ajouter au panier'
         }
     }
-/**
- * Teste sir la quantité change
- * si c'est le cas, le texte du bouton passe à 'ajouter au panier'
- */
+/** ******************************************************************
+ * Teste si la quantité change                                     ***
+ * si c'est le cas, le texte du bouton passe à 'ajouter au panier' ***
+ ****************************************************************** */
 function QuantityChange()
     {
         const color = document.querySelector('#quantity')
@@ -162,11 +163,10 @@ function QuantityChange()
         }
     }
 
-
-/*  **********************************************
-    *** Test du bouton commander et traitement ***
-    *** CE = null ; CS = nul                   ***
-    ********************************************** */
+/** **********************************************
+ *  *** Test du bouton commander et traitement ***
+ *  *** CE = null ; CS = nul                   ***
+**********************************************  */
 function buttonWatched() 
 {
   //mise en écoute du click sur le bouton panier

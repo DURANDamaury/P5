@@ -1,6 +1,10 @@
 const apiUrl = "http://localhost:3000/api/products";
 const htmlIdItems = document.querySelector('#items');
 
+/** ***********************************************
+ * Récupération de la liste de canapé via l'api ***
+ * @returns {Promise<{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}[]>}                             ***
+ *************************************************/
 async function fetchData()
   {
     return fetch(apiUrl)
@@ -8,6 +12,10 @@ async function fetchData()
     .catch(err => console.log(err))
   }
 
+/** ************************************
+ * Création de la Dom pour un canapé ***
+ * @param {{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}} canape            ***
+ **************************************/
 function displayArticles(canape)
   {
     let newHtmlA = document.createElement('a'); //Je créé mon a   
@@ -32,6 +40,9 @@ function displayArticles(canape)
     htmlIdItems.appendChild(newHtmlA); //et je fourre mon a dans le conteneur principal
   }
 
+/** **********************
+ * Fonction principale ***
+ ************************/
 async function main()
 {
   let listeCanape = await fetchData()
