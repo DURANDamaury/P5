@@ -218,6 +218,20 @@ function buttonWatched()
         document.getElementById('colors').value = '';
         });
 }
+
+function valueWatch()
+    {
+        const quantityInput = document.getElementById('quantity')
+        quantityInput.addEventListener('change',function()
+        {
+            let quantityInputValue = document.getElementById('quantity').value
+            const quantityValuesign = Math.sign(quantityInputValue)
+            if  (quantityValuesign == -1 || quantityValuesign == -0)
+                {
+                    quantityInput.value = 1                    
+                }
+        })
+    }
 /*  ****************************
     *** Fonction principale  ***
     **************************** */
@@ -227,7 +241,7 @@ async function main()
     let canape = await searchID(canapeID); // récupère l'objet du canape
     DOMconstruct(canape); //ajout à la dom
 
-    //localStorage.clear(); //a effacer vide le storage pour test
+    valueWatch();   //on surveille la valeur pour interdire les nombres négatifs
     buttonWatched(); // fonction de click au panier
     ColorChange();
     QuantityChange();

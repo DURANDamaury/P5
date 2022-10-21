@@ -216,7 +216,13 @@ async function ModifyQuantity()
     {
         //lecture de la valeur
         const QuantityCase = event.target;
-        const QuantityValue = QuantityCase.value;
+        let QuantityValue = QuantityCase.value;
+        const quantitySign = Math.sign(QuantityValue)
+        if (quantitySign == -1 || quantitySign == -0)
+            {
+                QuantityValue = 1
+                QuantityCase.value = 1
+            }
 
         const CartItem = QuantityCase.closest('.cart__item')
         const IdProductQuantity = CartItem.dataset.id;
@@ -269,6 +275,7 @@ function OrderSend()
                     contact = constructContactObject(); // on récupère l'objet contact
                     product = constructProduitTab(); //on récupère le tableau de produit
                     commande= await SendToApi(contact,product); //on envoi à l'api
+                    localStorage.clear(); //vide le storage pour test
                     const link = 'confirmation.html?orderId='
                     document.location.href = link+commande.orderId
                     }
