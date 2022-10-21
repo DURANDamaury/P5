@@ -167,6 +167,9 @@ async function TotalPrice()
    ***************************************** */
 async function DomGeneration()
     {
+        let commande = localStorage.getItem("basket");
+        let itemList = JSON.parse(commande);
+        let NumberOfArticles = itemList.length;
         for (let i=0 ; i<NumberOfArticles ; i++)
             {
                 let canape = itemList[i];
@@ -267,7 +270,6 @@ function OrderSend()
                     product = constructProduitTab(); //on récupère le tableau de produit
                     commande= await SendToApi(contact,product); //on envoi à l'api
                     const link = 'confirmation.html?orderId='
-                    //console.log(link,commande.orderId)
                     document.location.href = link+commande.orderId
                     }
             })
@@ -460,7 +462,6 @@ function Verifyform()
    **************************************************************** */
 async function ObjectsInBasket()
     {
-        
         await DomGeneration()
         TotalQuantity();
         TotalPrice();
@@ -480,11 +481,16 @@ function EmptyBasket ()
 
 function main()
     {
+       
         let commande = localStorage.getItem("basket");
-        if (commande && commande != '[]')
+        if (commande !== null && commande != '[]')
             {
                 //le panier existe
-                ObjectsInBasket();
+                let commande = localStorage.getItem("basket");
+                let itemList = JSON.parse(commande);
+                let NumberOfArticles = itemList.length;
+                const apiUrl = "http://localhost:3000/api/products";
+                ObjectsInBasket(NumberOfArticles);
             }
         else
             {
@@ -495,8 +501,5 @@ function main()
 
 // **************************************************
 // ***                    START                   ***
-    let commande = localStorage.getItem("basket");
-    let itemList = JSON.parse(commande);
-    let NumberOfArticles = itemList.length;
-    const apiUrl = "http://localhost:3000/api/products";
+
 main();
