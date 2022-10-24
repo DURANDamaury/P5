@@ -218,7 +218,9 @@ function buttonWatched()
         document.getElementById('colors').value = '';
         });
 }
-
+/**
+ * Eventlistner sur les changement de valeur
+ */
 function valueWatch()
     {
         const quantityInput = document.getElementById('quantity')

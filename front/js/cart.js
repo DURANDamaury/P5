@@ -1,7 +1,3 @@
-function p(message) {console.log(JSON.parse(JSON.stringify(message)))}; // console log sans référence
-// Local storage
-
-
 /** **********************************************************
  *  *** API - Récupération du tableau de tous les éléments ***
  * @returns {Promise<{_id: string, name: string , price: number, imageUrl: string, description: string, altTxt: string}[]>}
@@ -477,7 +473,9 @@ async function ObjectsInBasket()
         Verifyform();
         OrderSend();
     }
-
+/**
+ * Affiche le message 'panier vide'
+ */
 function EmptyBasket ()
     {
         const PanierVideMessage = document.getElementById('cartAndFormContainer').querySelector('h1');
@@ -485,10 +483,11 @@ function EmptyBasket ()
         const PriceSelect = document.querySelector('.cart')
         PriceSelect.remove()
     }
-
+/**
+ * Fonction principale
+ */
 function main()
     {
-       
         let commande = localStorage.getItem("basket");
         if (commande !== null && commande != '[]')
             {
