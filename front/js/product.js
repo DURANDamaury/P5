@@ -180,9 +180,7 @@ function buttonWatched()
         const ValueChecked = colorsFind.querySelector("option:checked");
         colorValue = ValueChecked.value;
         //récupération de la quantité
-        const quantityFind = document.querySelector(
-        ".item__content__settings__quantity"
-        );
+        const quantityFind = document.querySelector(".item__content__settings__quantity");
         let quantityInput = quantityFind.querySelector("input");
         let quantityValue = quantityInput.value;
 
